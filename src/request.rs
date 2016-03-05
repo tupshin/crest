@@ -233,6 +233,7 @@ pub trait Request<'a> {
         let method: Box<Fn(_) -> _> = match *self.get_method() {
             Method::Get => Box::new(|x| client.get(x)),
             Method::Post => Box::new(|x| client.post(x)),
+            Method::Put => Box::new(|x| client.put(x)),
             Method::Delete => Box::new(|x| client.delete(x)),
             _ => unimplemented!(),
         };
@@ -386,6 +387,40 @@ impl_Body!(Post);
 
 impl<'a> Post<'a> {
     fn_new!(Post);
+}
+
+/**
+A `PUT` request.
+ */
+#[derive(Debug)]
+pub struct Put<'a> {
+    endpoint: &'a Endpoint,
+    method: Method,
+    url: Url,
+    data: Data,
+}
+
+impl<'a> Request<'a> for Put<'a> {
+    impl_Request_accessors!(Put);
+
+    fn parameters<I, K, V>(&mut self, params: I) where
+        I: IntoIterator,
+        I::Item: Borrow<(K, V)>,
+        K: AsRef<str>,
+        V: AsRef<str>,
+    {
+        let new_params = updated_parameters(self, params);
+        self.get_mut_url().query = None;
+        self.headers().set(header::ContentType::form_url_encoded());
+        let url_encoded = form_urlencoded::serialize(new_params);
+        self.body(&url_encoded);
+    }
+}
+
+impl_Body!(Put);
+
+impl<'a> Put<'a> {
+    fn_new!(Put);
 }
 
 /**

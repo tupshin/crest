@@ -155,6 +155,16 @@ impl Endpoint {
     }
 
     /**
+    Convenience function to create a `PUT` request.
+     */
+    pub fn put<'a, I>(&'a self, path: I) -> Result<Put<'a>> where
+        I: IntoIterator,
+        I::Item: AsRef<str>,
+    {
+        Put::new(self, path)
+    }
+
+    /**
     Convenience function to create a `DELETE` request.
      */
     pub fn delete<'a, I>(&'a self, path: I) -> Result<Delete<'a>>  where
